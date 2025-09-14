@@ -32,7 +32,7 @@ func prepare() (string, string, string) {
 
 }
 
-// Input Port to be proxied to (On Other Machine) (This Software will activate the Port and )
+// Input Port to be proxied to (On Other Machine) (This Software will activate the Port and io pipe it to the other socket. )
 func SocketConnect(typeOfConnection string, ip string, port string) net.Conn {
 	fmt.Println("Establishing Connection...")
 
@@ -78,8 +78,12 @@ func EnableForwarding_tcp(ip string) {
 		os.Exit(1)
 	}
 
-	var address = net.JoinHostPort(ip, port_to_be_forwarded_to)
-	pipe_conn, err := net.Dial("tcp", address) // Where to forward.
+	/*
+		var address = net.JoinHostPort(ip, port_to_be_forwarded_to)
+		pipe_conn, err := net.Dial("tcp", address) // Where to forward.
+	*/
+
+	pipe_conn := SocketConnect(typeOfConnection, ip, port_to_be_forwarded_to)
 
 	if err != nil {
 		fmt.Println("Pipe Connection, using net_dial was not initialized, exiting...)")
