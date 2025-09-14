@@ -48,7 +48,7 @@ func SocketConnect(typeOfConnection string, ip string, port string) net.Conn {
 
 	if err != nil {
 		fmt.Println("Error:", err)
-		fmt.Println("Port-Closed or Filtered")
+		fmt.Println("Port-Closed or Filtered, couldnt PIPE Data-Stream, exiting...")
 		os.Exit(1)
 	}
 
@@ -57,27 +57,32 @@ func SocketConnect(typeOfConnection string, ip string, port string) net.Conn {
 }
 
 func Listen(typeOfConnection string, port string) net.Listener {
-	println("Enabling Forwarding, starting listener on %d:%s", port)
+	fmt.Printf("Enabling Forwarding, starting listener on 127.0.0.1:%s\n", port)
 	listener, err := net.Listen(typeOfConnection, port)
 
 	if err != nil {
-		println("Something went wrong, maybe Port is being used / no perms?")
+		println("Something went wrong,maybe a Firewall?, exiting...")
 		os.Exit(1)
+		// return nil
 	}
 
 	return listener
 }
 
 func EnableForwarding_tcp(ip string) {
-	println("Getting Piping STDIN to STDOUT )")
 
 	// written, err := io.Copy()
 
 	typeOfConnection, port_original, port_to_be_forwarded_to := prepare()
 	main_ReturnRndmPorts(port_original, port_to_be_forwarded_to)
-	println("Port_Original: %s, Port_Forwarded_To: %s", port_original, port_to_be_forwarded_to)
 
 	origin_list := Listen(typeOfConnection, port_original)
+
+	/* DEBUG METHOD
+	if origin_list == nil {
+		return
+	}
+	*/
 
 	for {
 		/*
@@ -93,8 +98,8 @@ func EnableForwarding_tcp(ip string) {
 		origin_conn, err := origin_list.Accept()
 
 		if err != nil {
-			println("Something happend while ACCEPTING() connection..., exiting.")
-			os.Exit(1)
+			println("Something happend while ACCEPTING() connection..., did not initlaize")
+			continue
 		}
 
 		/*
@@ -103,11 +108,6 @@ func EnableForwarding_tcp(ip string) {
 		*/
 
 		pipe_conn := SocketConnect(typeOfConnection, ip, port_to_be_forwarded_to)
-
-		if err != nil {
-			fmt.Println("Pipe Connection, using net_dial was not initialized, exiting...)")
-			os.Exit(1)
-		}
 
 		// 2 Go Routines running at the same time.
 		go func() {
